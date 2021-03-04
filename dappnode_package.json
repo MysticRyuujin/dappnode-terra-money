@@ -1,0 +1,37 @@
+{
+  "name": "terra-money.public.dappnode.eth",
+  "version": "0.1.0",
+  "upstreamVersion": "master",
+  "upstreamRepo": "terra-project/core",
+  "upstreamArg": "UPSTREAM_VERSION",
+  "description": "",
+  "type": "service",
+  "author": "androolloyd <opensource@andrewredden.com> (https://github.com/androolloyd)",
+  "contributors": [
+    "terra-project (https://github.com/terra-project)"
+  ],
+  "categories": [
+    "Developer tools", "Storage", "Communications"
+  ],
+  "keywords": [
+    "terra"
+  ],
+  "globalEnvs": {
+    "all": true
+  },
+  "backup": [
+    {
+      "name": "node_key.json",
+      "path": "/.terrad/config/node_key.json"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/androolloyd/docker-terra"
+  },
+  "links": {
+    "homepage": "https://terra.money",
+    "gateway": "http://terra-money.public.dappnode:56657"
+  },
+  "license": "GPL v3"
+}

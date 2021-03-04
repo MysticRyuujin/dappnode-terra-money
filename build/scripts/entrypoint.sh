@@ -1,14 +1,20 @@
 #!/bin/sh
 
 
+
+
 # exit script on any error
 set -e
 echo "setting up initial configurations"
 
+
+NODE_BINARY=/go/bin/terrad
+NODE_CLI_BINARY=/go/bin/terracli
+
 if [ ! -f "$TERRAD_HOME/config/config.toml" ];
 then
 
-  terrad init ${MONIKER:-nonamenode} --home=${TERRAD_HOME:-/.terrad} --chain-id=${CHAIN_ID:-columbus-4}
+  ${NODE_BINARY} init ${MONIKER:-nonamenode} --home=${TERRAD_HOME:-/.terrad} --chain-id=${CHAIN_ID:-columbus-4}
 
   cd $TERRAD_HOME/config
 
@@ -419,7 +425,7 @@ cd "$TERRAD_HOME"
 
   if [ "$BOOTSTRAP" == "TRUE" ]; then
     echo "bootstrapping... this will take some time."
-    wget 	http://quicksync.chainlayer.io/terra/colombus-3.20200128.0205.tar.lz4	
+    wget 	http://quicksync.chainlayer.io/terra/colombus-3.20200128.0205.tar.lz4
     lz4 -d -v --rm colombus-3.20200128.0205.tar.lz4 | tar xf -
   else
       echo "bootstrap ENV variable != TRUE -->  syncing chain from genesis..."
@@ -436,7 +442,7 @@ cd /etc/supervisor/conf.d/
 
 cat > supervisor-terracli.conf << EOF
 [program:terracli]
-command=terracli rest-server --laddr tcp://0.0.0.0:${LCD_PORT:-1317} --home=${TERRAD_HOME:-/.terrad} --chain-id=${CHAIN_ID:-columbus-4} --trust-node --node=${RPC_LADDR:-tcp://0.0.0.0}:${RPC_PORT:-26657}
+command=${NODE_CLI_BINARY} rest-server --laddr tcp://0.0.0.0:${LCD_PORT:-1317} --home=${TERRAD_HOME:-/.terrad} --chain-id=${CHAIN_ID:-columbus-4} --trust-node --node=${RPC_LADDR:-tcp://0.0.0.0}:${RPC_PORT:-26657}
 redirect_stderr=false
 autostart=true
 autorestart=unexpected
@@ -456,7 +462,7 @@ EOF
 
 cat > supervisor-terrad.conf << EOF
 [program:terrad]
-command=terrad start --home=${TERRAD_HOME:-/.terrad}
+command=${NODE_BINARY} start --home=${TERRAD_HOME:-/.terrad}
 redirect_stderr=false
 autostart=true
 autorestart=unexpected
