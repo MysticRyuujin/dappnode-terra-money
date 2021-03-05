@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 
 
@@ -8,8 +8,7 @@ set -e
 echo "setting up initial configurations"
 
 
-NODE_BINARY=/go/bin/terrad
-NODE_CLI_BINARY=/go/bin/terracli
+NODE_BINARY=terrad
 
 if [ ! -f "$TERRAD_HOME/config/config.toml" ];
 then
@@ -34,12 +33,12 @@ then
 
   echo "downloading genesis.json"
 
-  if [ ! -z "$GENESIS_URL" ]; then
+  if [[ -n "$GENESIS_URL" ]]; then
       wget $GENESIS_URL
-      cp columbus-4-genesis.json genesis.json && rm columbus-4-genesis.json
+      cp columbus-4-genesis.json ${TERRAD_HOME:-/.terrad}/config/genesis.json && rm columbus-4-genesis.json
   else
       wget https://columbus-genesis.s3-ap-northeast-1.amazonaws.com/columbus-4-genesis.json
-      cp columbus-4-genesis.json genesis.json && rm columbus-4-genesis.json
+      cp columbus-4-genesis.json ${TERRAD_HOME:-/.terrad}/config/genesis.json && rm columbus-4-genesis.json
   fi
 
 echo "generating config.toml"
@@ -69,7 +68,7 @@ db_backend = "${DB_BACKEND:-goleveldb}"
 db_dir = "${DB_DIR:-data}"
 
 # Output level for logging, including package level options
-log_level = "${LOG_LEVEL:-main:info,state:info,*:error}"
+log_level = "${LOG_LEVEL:-info:info,state:info,*:error}"
 
 log_format = "${LOG_FORMAT:-plain}"
 
@@ -244,7 +243,7 @@ pex = ${PEX:-true}
 # Does not work if the peer-exchange reactor is disabled.
 seed_mode = ${SEED_MODE:-false}
 
-# Comma separated list of peer IDs to keep private (will not be gossiped to other peers)
+# Comma separated  list of peer IDs to keep private (will not be gossiped to other peers)
 private_peer_ids = "${PRIVATE_PEER_IDS:-}"
 
 # Toggle to disable guard against peers connecting from the same ip.
@@ -419,67 +418,17 @@ contract-query-gas-limit = "3000000"
 # parameters for this, so we should allow node operators to set it.
 lru-size = "0"
 EOF
-
-
-cd "$TERRAD_HOME"
-
-  if [ "$BOOTSTRAP" == "TRUE" ]; then
-    echo "bootstrapping... this will take some time."
-    wget 	http://quicksync.chainlayer.io/terra/colombus-3.20200128.0205.tar.lz4
-    lz4 -d -v --rm colombus-3.20200128.0205.tar.lz4 | tar xf -
-  else
-      echo "bootstrap ENV variable != TRUE -->  syncing chain from genesis..."
-  fi
-
 fi
 
 
-echo "updating supervisor config files"
-rm /etc/supervisor/conf.d/supervisor-terracli.conf
-rm /etc/supervisor/conf.d/supervisor-terrad.conf
-
-cd /etc/supervisor/conf.d/
-
-cat > supervisor-terracli.conf << EOF
-[program:terracli]
-command=${NODE_CLI_BINARY} rest-server --laddr tcp://0.0.0.0:${LCD_PORT:-1317} --home=${TERRAD_HOME:-/.terrad} --chain-id=${CHAIN_ID:-columbus-4} --trust-node --node=${RPC_LADDR:-tcp://0.0.0.0}:${RPC_PORT:-26657}
-redirect_stderr=false
-autostart=true
-autorestart=unexpected
-startsecs=10
-startretries=5
-stdout_logfile=/stdout-terracli.txt
-stdout_logfile_maxbytes=10MB
-stdout_logfile_backups=10
-stdout_capture_maxbytes=10MB
-stdout_events_enabled=false
-stderr_logfile=/stderr-terracli.txt
-stderr_logfile_maxbytes=10MB
-stderr_logfile_backups=10
-stderr_capture_maxbytes=10MB
-stderr_events_enabled=false
-EOF
-
-cat > supervisor-terrad.conf << EOF
-[program:terrad]
-command=${NODE_BINARY} start --home=${TERRAD_HOME:-/.terrad}
-redirect_stderr=false
-autostart=true
-autorestart=unexpected
-startsecs=10
-startretries=5
-stdout_logfile=/stdout-terrad.txt
-stdout_logfile_maxbytes=10MB
-stdout_logfile_backups=10
-stdout_capture_maxbytes=10MB
-stdout_events_enabled=false
-stderr_logfile=/stderr-terrad.txt
-stderr_logfile_maxbytes=10MB
-stderr_logfile_backups=10
-stderr_capture_maxbytes=10MB
-stderr_events_enabled=false
-EOF
-
-
 echo "configuration complete  ---- starting..."
-exec supervisord --nodaemon --configuration /etc/supervisor/supervisord.conf
+
+if [[ ${BOOTSTRAP} -eq 1 ]]; then
+    echo "bootstrapping... this will take some time."
+    wget ${QUICKSYNC_URL} -O columbus-bootstrap.tar.lz4
+    lz4 -d -v --rm columbus-bootstrap.tar.lz4 | tar xf -
+  else
+    echo "bootstrap ENV variable != TRUE -->  syncing chain from genesis..."
+fi
+
+bash -c "terrad start --home=${TERRAD_HOME:-/.terrad}";

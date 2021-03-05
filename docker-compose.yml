@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  terra-money:
+  chain:
     build:
       args:
         UPSTREAM_VERSION: master
@@ -10,10 +10,12 @@ services:
       - MONIKER=DAPPNodler
       - LOG_LEVEL=debug
       - CHAIN_ID=columbus-4
-      - BOOTSTRAP="TRUE"
+      - BOOTSTRAP=1
       - TERRAD_HOME=/.terrad
       - >-
         GENESIS_URL=https://columbus-genesis.s3-ap-northeast-1.amazonaws.com/columbus-4-genesis.json
+      - >-
+        QUICKSYNC_URL=https://get.quicksync.io/columbus-4-default.20210304.0410.tar.lz4
       - ADDR_BOOK_STRICT="false"
       - PROMETHEUS_LISTEN_ADDR=56660
       - PROMETHEUS="true"
@@ -27,10 +29,47 @@ services:
     ports:
       - "56656:56656"
       - "56657:56657"
+    volumes:
+      - "chain_data:/.terrad"
+    image: "chain.terra-money.public.dappnode.eth:0.1.0"
+  api:
+    build:
+      args:
+        UPSTREAM_VERSION: master
+      context: ./build
+      dockerfile: Dockerfile
+    depends_on:
+      - chain
+    environment:
+      - LOG_LEVEL=debug
+      - CHAIN_ID=columbus-4
+      - TERRAD_HOME=/.terrad
+      - >-
+        GENESIS_URL=https://columbus-genesis.s3-ap-northeast-1.amazonaws.com/columbus-4-genesis.json
+      - PROMETHEUS_LISTEN_ADDR=56660
+      - PROMETHEUS="true"
+      - MAX_OPEN_CONNECTIONS=3
+      - LCD_PORT=5317
+      - RPC_PORT=56657
+      - RPC_LADDR=chain
+      - P2P_PORT=56656
+      - PROXY_APP_PORT=56658
+      - CORS_ALLOWED_ORIGINS=*
+    restart: always
+    ports:
       - "56658:56658"
       - "5317:5317"
     volumes:
       - "chain_data:/.terrad"
-    image: "terra-money.public.dappnode.eth:0.1.0"
+    image: "api.terra-money.public.dappnode.eth:0.1.0"
+    entrypoint:
+      - terracli
+      - rest-server
+      - "--laddr"
+      - "tcp://0.0.0.0:${LCD_PORT:-1317}"
+      - "--home=${TERRAD_HOME:-/.terrad}"
+      - "--chain-id=${CHAIN_ID:-columbus-4}"
+      - "--trust-node"
+      - "--node=${RPC_LADDR:-tcp://0.0.0.0}:${RPC_PORT:-26657}"
 volumes:
   chain_data: {}

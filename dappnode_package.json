@@ -22,7 +22,18 @@
   "backup": [
     {
       "name": "node_key.json",
-      "path": "/.terrad/config/node_key.json"
+      "path": "/.terrad/config/node_key.json",
+      "service": "chain"
+    },
+    {
+      "name": "priv_validator_key.json",
+      "path": "/.terrad/config/priv_validator_key.json",
+      "service": "chain"
+    },
+    {
+      "name": "priv_validator_state.json",
+      "path": "/.terrad/data/priv_validator_state.json",
+      "service": "chain"
     }
   ],
   "repository": {
@@ -31,7 +42,8 @@
   },
   "links": {
     "homepage": "https://terra.money",
-    "gateway": "http://terra-money.public.dappnode:56657"
+    "gateway": "http://chain.terra-money.public.dappnode:56657",
+    "api": "http://api.terra-money.public.dappnode:56657"
   },
   "license": "GPL v3"
 }
