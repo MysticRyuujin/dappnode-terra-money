@@ -4,7 +4,7 @@ WORKDIR /go/src/github.com/terra-project/core
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install libusb-dev -y
+RUN apt-get update && apt-get install libusb-dev lz4 -y
 RUN git clone --recursive ${UPSTREAM_VERSION} https://www.github.com/terra-project/core.git .
 
 RUN make install

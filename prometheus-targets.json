@@ -1,0 +1,20 @@
+[
+  {
+    "labels": {
+      "package": "terra-money.public.dappnode.eth",
+      "service": "chain.terra-money.public.dappnode"
+    },
+    "targets": [
+      "chain.terra-money.public.dappnode:56660"
+    ]
+  },
+  {
+    "labels": {
+      "package": "terra-money.public.dappnode.eth",
+      "service": "api.terra-money.public.dappnode"
+    },
+    "targets": [
+      "api.terra-money.public.dappnode:56660"
+    ]
+  }
+]

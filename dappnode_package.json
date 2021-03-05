@@ -43,7 +43,7 @@
   "links": {
     "homepage": "https://terra.money",
     "gateway": "http://chain.terra-money.public.dappnode:56657",
-    "api": "http://api.terra-money.public.dappnode:56657"
+    "api": "http://api.terra-money.public.dappnode:5317"
   },
   "license": "GPL v3"
 }
