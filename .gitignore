@@ -1,5 +1,2 @@
-data/gaiad/data 
-data/
-cluster
-.DS_Store# DAppNodeSDK release directories
+.DS_Store
 build_*

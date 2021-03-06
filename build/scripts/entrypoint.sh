@@ -41,9 +41,32 @@ then
       cp columbus-4-genesis.json ${TERRAD_HOME:-/.terrad}/config/genesis.json && rm columbus-4-genesis.json
   fi
 
+
+echo "generating wasm.toml"
+
+cat > wasm.toml << EOF
+# This is a TOML config file.
+# For more information, see https://github.com/toml-lang/toml
+
+##### main base config options #####
+
+# The maximum gas amount can be spent for contract query.
+# The contract query will invoke contract execution vm,
+# so we need to restrict the max usage to prevent DoS attack
+contract-query-gas-limit = "3000000"
+
+# Storing instances in the LRU will have no effect on the results
+# (still deterministic), but should lower execution time at
+# the cost of increased memory usage. We cannot pick universal
+# parameters for this, so we should allow node operators to set it.
+lru-size = "0"
+EOF
+fi
+
+
 echo "generating config.toml"
 
-cat > config.toml << EOF
+cat > "$TERRAD_HOME/config/config.toml" << EOF
 # This is a TOML config file.
 # For more information, see https://github.com/toml-lang/toml
 
@@ -367,7 +390,7 @@ EOF
 
 echo "generating app.toml"
 
-cat > app.toml << EOF
+cat > "$TERRAD_HOME/config/app.toml" << EOF
 ##### main base config options #####
 
 # The minimum gas prices a validator is willing to accept for processing a
@@ -397,29 +420,6 @@ inter-block-cache = true
 # everything: all saved states will be deleted, storing only the current state
 pruning = "nothing"
 EOF
-
-
-echo "generating wasm.toml"
-
-cat > wasm.toml << EOF
-# This is a TOML config file.
-# For more information, see https://github.com/toml-lang/toml
-
-##### main base config options #####
-
-# The maximum gas amount can be spent for contract query.
-# The contract query will invoke contract execution vm,
-# so we need to restrict the max usage to prevent DoS attack
-contract-query-gas-limit = "3000000"
-
-# Storing instances in the LRU will have no effect on the results
-# (still deterministic), but should lower execution time at
-# the cost of increased memory usage. We cannot pick universal
-# parameters for this, so we should allow node operators to set it.
-lru-size = "0"
-EOF
-fi
-
 
 echo "configuration complete  ---- starting..."
 

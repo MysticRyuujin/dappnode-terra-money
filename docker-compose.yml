@@ -58,7 +58,6 @@ services:
     restart: always
     ports:
       - "56658:26658"
-      - "5317:1317"
     volumes:
       - "chain_data:/.terrad"
     image: "api.terra-money.public.dappnode.eth:0.1.0"
