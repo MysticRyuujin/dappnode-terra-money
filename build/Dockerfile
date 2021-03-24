@@ -4,12 +4,10 @@ WORKDIR /go/src/github.com/terra-project/core
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install libusb-dev lz4 -y
+RUN apt-get update && apt-get install libusb-dev liblz4-tool aria2 jq -y
 RUN git clone --recursive ${UPSTREAM_VERSION} https://www.github.com/terra-project/core.git .
 
 RUN make install
-# Add supervisor configuration files
-
 ENV TERRAD_HOME=/.terrad
 WORKDIR $TERRAD_HOME
 

@@ -1,7 +1,7 @@
 [
   {
     "labels": {
-      "package": "terra-money.public.dappnode.eth",
+      "job": "terra-money.public.dappnode.eth",
       "service": "chain.terra-money.public.dappnode"
     },
     "targets": [
@@ -10,11 +10,11 @@
   },
   {
     "labels": {
-      "package": "terra-money.public.dappnode.eth",
+      "job": "terra-money.public.dappnode.eth",
       "service": "api.terra-money.public.dappnode"
     },
     "targets": [
-      "api.terra-money.public.dappnode:56660"
+      "api.terra-money.public.dappnode:26660"
     ]
   }
 ]

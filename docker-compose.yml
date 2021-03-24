@@ -14,8 +14,7 @@ services:
       - TERRAD_HOME=/.terrad
       - >-
         GENESIS_URL=https://columbus-genesis.s3-ap-northeast-1.amazonaws.com/columbus-4-genesis.json
-      - >-
-        QUICKSYNC_URL=https://get.quicksync.io/columbus-4-default.20210304.0410.tar.lz4
+      - CHAIN_TYPE=
       - ADDR_BOOK_STRICT="false"
       - PROMETHEUS_LISTEN_ADDR=56660
       - PROMETHEUS="true"

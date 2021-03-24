@@ -420,13 +420,70 @@ inter-block-cache = true
 # everything: all saved states will be deleted, storing only the current state
 pruning = "nothing"
 EOF
-
+QUICKSYNC_URL_PREFIX="https://get.quicksync.io/"
 echo "configuration complete  ---- starting..."
+
+
+check_sum () {
+  FILE=$1
+  COMMAND=$2
+
+  if [ "$FILE" == "" ]
+  then
+    echo "No file provided"
+    exit 1
+  fi
+  if [ "$COMMAND" != "check" -a "$COMMAND" != "create" ]
+  then
+    echo "no create or check command specified, assuming check"
+    COMMAND=check
+  fi
+
+  if [ ! -f ${FILE} ]
+  then
+    echo "no file found to checksum"
+    exit 1
+  fi
+  SIZE=`du -Bg $FILE|sed 's/\(\d*\)G.*/\1/'`
+
+  if [ "$COMMAND" == "create" ]
+  then
+    > ${FILE}.checksum
+    for((i=1;i<=$SIZE;++i)) do
+      dd bs=1M skip=$((1024*$i)) count=1 if=$FILE 2>/dev/null | sha512sum >> ${FILE}.checksum
+    done
+    echo "CHECKSUM CREATED"
+    exit 0
+  elif [ -f ${FILE}.checksum -a "$COMMAND" == "check" ]
+  then
+    for((i=1;i<=$SIZE;++i)) do
+      CHECKSUM=`dd bs=1M skip=$((1024*$i)) count=1 if=$FILE 2>/dev/null | sha512sum |awk '{print $1}'`
+      LINE=`grep -n $CHECKSUM ${FILE}.checksum|awk -F\: '{print $1}'`
+      if [ "$LINE" != "$i" ]
+      then
+        echo "CHECKSUM FAILED"
+        exit 1
+      fi
+    done
+    echo "CHECKSUM SUCCEEDED"
+    exit 0
+  elif [ ! -f ${FILE}.checksum -a "$COMMAND" == "check" ]
+  then
+    echo "no checksum file found"
+    exit 1
+  fi
+}
 
 if [[ ${BOOTSTRAP} -eq 1 ]]; then
     echo "bootstrapping... this will take some time."
-    wget ${QUICKSYNC_URL} -O columbus-bootstrap.tar.lz4
-    lz4 -d -v --rm columbus-bootstrap.tar.lz4 | tar xf -
+    FILENAME=$(wget -cq https://terra.quicksync.io/sync.json -O - | jq -r --arg CHAIN_TYPE "columbus-4-${CHAIN_TYPE:-pruned}" -c ' .[] | select( .file | contains($CHAIN_TYPE)) | .file')
+    aria2c -x5 "https://get.quicksync.io/$FILENAME"
+    wget "https://get.quicksync.io/$FILENAME.checksum"
+    # Compare checksum with onchain version. Hash can be found at https://get.quicksync.io/columbus-3-pruned.DATE.TIME.tar.lz4.hash
+    # shellcheck disable=SC2006
+    curl -s "https://lcd.terra.dev/txs/$(curl -s "https://get.quicksync.io/$FILENAME.hash")|jq -r '.tx.value.memo'|sha512sum -c"
+    check_sum $FILENAME
+    lz4 -d $FILENAME | tar xf -
   else
     echo "bootstrap ENV variable != TRUE -->  syncing chain from genesis..."
 fi
